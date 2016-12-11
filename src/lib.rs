@@ -40,13 +40,13 @@ use std::env;
 use r2d2_diesel::ConnectionManager;
 
 use models::*;
-use schema::*;
 use schema::posts::dsl::*;
 
 // Create a static connection pool
 // See: http://neikos.me/Using_Rust_for_Webdev_as_a_Hobby_Programmer.html
 lazy_static! {
     static ref CONNECTION: r2d2::Pool<ConnectionManager<PgConnection>> = {
+        dotenv().ok();
         let database_url = env::var("DATABASE_URL")
             .expect("DATABASE_URL must be set");
         let config = r2d2::Config::default();
@@ -60,12 +60,21 @@ fn connection() -> r2d2::Pool<ConnectionManager<PgConnection>> {
     CONNECTION.clone()
 }
 
-
+/// Get all posts for this blog
 pub fn get_posts() -> Result<Vec<Post>> {
     let results = posts.filter(is_published.eq(true))
         .load::<Post>(&*try!(connection().get()))?;
 
     Ok(results)
+}
+
+pub fn new_draft<'a>(post_title: &'a str, post_body: &'a str) -> Result<Post> {
+    use schema::posts;
+
+    let draft = NewPost::draft(post_title, post_body);
+
+    Ok(diesel::insert(&draft).into(posts::table)
+        .get_result(&*try!(connection().get()))?)
 }
 
 

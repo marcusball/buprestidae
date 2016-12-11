@@ -1,8 +1,6 @@
 extern crate buprestidae;
 extern crate dotenv;
 
-use buprestidae::models::Post;
-
 fn main() {
     dotenv::dotenv().ok();
 

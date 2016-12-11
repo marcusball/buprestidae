@@ -1,0 +1,6 @@
+[package]
+name = "buprestidae"
+version = "0.1.0"
+authors = ["Marcus Ball <marcus@marcusball.me>"]
+
+[dependencies]

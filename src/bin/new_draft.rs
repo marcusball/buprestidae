@@ -9,13 +9,14 @@ fn main() {
     println!("Title: ");
     let mut title = String::new();
     stdin().read_line(&mut title).unwrap();
-    let title = &title[..(title.len() - 1)]; // drop newline
+    let title = title.replace(|c| c == '\r' || c == '\n', "");
 
-    println!("Body:\n");
+    println!("Body:");
     let mut body = String::new();
-    stdin().read_to_string(&mut body).unwrap();
+    stdin().read_line(&mut body).unwrap();
+    let body = body.replace(|c| c == '\r' || c == '\n', "");
 
     let post = buprestidae::new_draft(&title, &body).unwrap();
 
-    println!("Draft saved for {} ({}).", post.title, post.id);
+    println!("\nDraft saved for {} ({:?}) :D", post.title, post.id);
 }

@@ -1,5 +1,8 @@
+#![feature(plugin)]
 #![feature(proc_macro)]
+#![plugin(rocket_codegen)]
 
+extern crate rocket;
 extern crate dotenv;
 #[macro_use]
 extern crate error_chain;
@@ -78,8 +81,4 @@ pub fn new_draft<'a>(post_title: &'a str, post_body: &'a str) -> Result<Post> {
 }
 
 
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {}
-}
+fn main() {}

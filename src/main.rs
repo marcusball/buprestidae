@@ -81,4 +81,11 @@ pub fn new_draft<'a>(post_title: &'a str, post_body: &'a str) -> Result<Post> {
 }
 
 
-fn main() {}
+#[get("/")]
+fn index() -> &'static str {
+    "Hello, world!"
+}
+
+fn main() {
+    rocket::ignite().mount("/", routes![index]).launch();
+}

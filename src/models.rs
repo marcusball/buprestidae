@@ -1,13 +1,15 @@
 use chrono::datetime::DateTime;
 use chrono::offset::utc::UTC;
 
-#[derive(Queryable)]
+#[derive(Queryable, Serialize)]
 pub struct Post {
     pub id: i32,
     pub title: String,
     pub body: String,
     pub is_published: bool,
+    #[serde(skip_serializing)]
     pub publish_date: Option<DateTime<UTC>>,
+    #[serde(skip_serializing)]
     pub last_modification_date: DateTime<UTC>,
 }
 

@@ -95,9 +95,10 @@ fn index() -> &'static str {
 fn blog_index() -> Template {
     #[derive(Serialize)]
     struct BlogIndexContext {
+        posts: Vec<Post>,
     }
 
-    let context = BlogIndexContext {};
+    let context = BlogIndexContext { posts: get_posts().unwrap() };
 
     Template::render("blog_index", &context)
 }

@@ -3,6 +3,9 @@
 #![plugin(rocket_codegen)]
 
 extern crate rocket;
+extern crate rocket_contrib;
+#[macro_use]
+extern crate serde_derive;
 extern crate dotenv;
 #[macro_use]
 extern crate error_chain;
@@ -41,6 +44,8 @@ use diesel::prelude::*;
 use diesel::pg::PgConnection;
 use std::env;
 use r2d2_diesel::ConnectionManager;
+
+use rocket_contrib::Template;
 
 use models::*;
 use schema::posts::dsl::*;
@@ -86,6 +91,20 @@ fn index() -> &'static str {
     "Hello, world!"
 }
 
+#[get("/")]
+fn blog_index() -> Template {
+    #[derive(Serialize)]
+    struct BlogIndexContext {
+    }
+
+    let context = BlogIndexContext {};
+
+    Template::render("blog_index", &context)
+}
+
 fn main() {
-    rocket::ignite().mount("/", routes![index]).launch();
+    rocket::ignite()
+        .mount("/", routes![index])
+        .mount("/blog", routes![blog_index])
+        .launch();
 }

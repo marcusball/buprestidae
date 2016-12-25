@@ -1,7 +1,7 @@
 use chrono::datetime::DateTime;
 use chrono::offset::utc::UTC;
 
-#[derive(Queryable, Serialize)]
+#[derive(Queryable, Serialize, Debug)]
 pub struct Post {
     pub id: i32,
     pub title: String,

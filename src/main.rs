@@ -59,13 +59,21 @@ struct NewPostForm {
     body: String,
 }
 
-struct UserSession(Option<()>);
+struct UserSession();
 
 impl<'a, 'r> FromRequest<'a, 'r> for UserSession {
     type Error = ();
 
     fn from_request(request: &'a Request<'r>) -> Outcome<UserSession, ()> {
-        return rocket::Outcome::Success(UserSession(None));
+        match request.cookies().find("BUP_SESSION") {
+            None => rocket::Outcome::Forward(()),
+            Some(cookie) => {
+                match cookie.value.as_str() {
+                    "supersecretkey" => rocket::Outcome::Success(UserSession()),
+                    _ => rocket::Outcome::Forward(()),
+                }
+            }
+        }
     }
 }
 
@@ -128,7 +136,7 @@ fn blog_index() -> Result<Template> {
 }
 
 #[get("/new")]
-fn blog_new_post() -> Template {
+fn blog_new_post(session: UserSession) -> Template {
     #[derive(Serialize)]
     struct NewPostContext {
 
@@ -138,6 +146,11 @@ fn blog_new_post() -> Template {
 
 
     Template::render("blog_new_post", &context)
+}
+
+#[get("/new", rank = 2)]
+fn blog_new_post_noauth() -> Redirect {
+    Redirect::to("/blog")
 }
 
 #[post("/new", data="<post>")]
@@ -164,6 +177,6 @@ fn main() {
     rocket::ignite()
         .mount("/", routes![index, login])
         .mount("/blog",
-               routes![blog_index, blog_new_post, blog_new_post_submit])
+               routes![blog_index, blog_new_post, blog_new_post_noauth, blog_new_post_submit])
         .launch();
 }

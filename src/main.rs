@@ -1,5 +1,4 @@
-#![feature(plugin)]
-#![feature(proc_macro)]
+#![feature(proc_macro, plugin, custom_derive)]
 #![plugin(rocket_codegen)]
 
 extern crate rocket;
@@ -45,10 +44,21 @@ use diesel::pg::PgConnection;
 use std::env;
 use r2d2_diesel::ConnectionManager;
 
+use rocket::request::Form;
+use rocket::response::Redirect;
 use rocket_contrib::Template;
 
 use models::*;
 use schema::posts::dsl::*;
+
+
+#[derive(FromForm)]
+struct NewPostForm<'a> {
+    post_title: &'a str,
+    post_body: &'a str,
+}
+
+
 
 // Create a static connection pool
 // See: http://neikos.me/Using_Rust_for_Webdev_as_a_Hobby_Programmer.html
@@ -92,20 +102,44 @@ fn index() -> &'static str {
 }
 
 #[get("/")]
-fn blog_index() -> Template {
+fn blog_index() -> Result<Template> {
     #[derive(Serialize)]
     struct BlogIndexContext {
         posts: Vec<Post>,
     }
 
-    let context = BlogIndexContext { posts: get_posts().unwrap() };
+    let context =
+        BlogIndexContext { posts: get_posts().chain_err(|| "Failed to load posts from database")? };
 
-    Template::render("blog_index", &context)
+    Ok(Template::render("blog_index", &context))
+}
+
+#[get("/new")]
+fn blog_new_post() -> Template {
+    #[derive(Serialize)]
+    struct NewPostContext {
+
+    }
+
+    let context = NewPostContext {};
+
+
+    Template::render("blog_new_post", &context)
+}
+
+#[post("/new", data="<post>")]
+fn blog_new_post_submit<'a>(post: Form<'a, NewPostForm<'a>>) -> Result<Redirect> {
+    use schema::posts;
+    let post = post.get();
+    let draft = NewPost::new(post.post_title, post.post_body);
+    diesel::insert(&draft).into(posts::table)
+        .get_result::<Post>(&*(connection().get()?))?;
+    Ok(Redirect::to("/blog"))
 }
 
 fn main() {
     rocket::ignite()
         .mount("/", routes![index])
-        .mount("/blog", routes![blog_index])
+        .mount("/blog", routes![blog_index, blog_new_post])
         .launch();
 }

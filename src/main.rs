@@ -44,6 +44,7 @@ use diesel::pg::PgConnection;
 use std::env;
 use r2d2_diesel::ConnectionManager;
 
+use rocket::http::{Cookie, Cookies};
 use rocket::request::Form;
 use rocket::response::Redirect;
 use rocket_contrib::Template;
@@ -140,9 +141,18 @@ fn blog_new_post_submit(post: Form<NewPostForm>) -> Result<Redirect> {
     Ok(Redirect::to("/blog"))
 }
 
+#[get("/login")]
+fn login(cookies: &Cookies) -> Redirect {
+    let mut session = Cookie::new("BUP_SESSION".into(), "supersecretkey".into());
+    session.httponly = true;
+    cookies.add(session);
+
+    Redirect::to("/")
+}
+
 fn main() {
     rocket::ignite()
-        .mount("/", routes![index])
+        .mount("/", routes![index, login])
         .mount("/blog",
                routes![blog_index, blog_new_post, blog_new_post_submit])
         .launch();

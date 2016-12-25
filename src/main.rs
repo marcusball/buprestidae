@@ -49,13 +49,13 @@ use rocket::response::Redirect;
 use rocket_contrib::Template;
 
 use models::*;
-use schema::posts::dsl::*;
+// use schema::posts::dsl::*;
 
 
-#[derive(FromForm)]
-struct NewPostForm<'a> {
-    post_title: &'a str,
-    post_body: &'a str,
+#[derive(FromForm,Debug)]
+struct NewPostForm {
+    title: String,
+    body: String,
 }
 
 
@@ -80,6 +80,8 @@ fn connection() -> r2d2::Pool<ConnectionManager<PgConnection>> {
 
 /// Get all posts for this blog
 pub fn get_posts() -> Result<Vec<Post>> {
+    use schema::posts::dsl::*;
+
     let results = posts.filter(is_published.eq(true))
         .load::<Post>(&*try!(connection().get()))?;
 
@@ -128,10 +130,11 @@ fn blog_new_post() -> Template {
 }
 
 #[post("/new", data="<post>")]
-fn blog_new_post_submit<'a>(post: Form<'a, NewPostForm<'a>>) -> Result<Redirect> {
+fn blog_new_post_submit(post: Form<NewPostForm>) -> Result<Redirect> {
     use schema::posts;
     let post = post.get();
-    let draft = NewPost::new(post.post_title, post.post_body);
+
+    let draft = NewPost::new(post.title.as_str(), post.body.as_str());
     diesel::insert(&draft).into(posts::table)
         .get_result::<Post>(&*(connection().get()?))?;
     Ok(Redirect::to("/blog"))
@@ -140,6 +143,7 @@ fn blog_new_post_submit<'a>(post: Form<'a, NewPostForm<'a>>) -> Result<Redirect>
 fn main() {
     rocket::ignite()
         .mount("/", routes![index])
-        .mount("/blog", routes![blog_index, blog_new_post])
+        .mount("/blog",
+               routes![blog_index, blog_new_post, blog_new_post_submit])
         .launch();
 }

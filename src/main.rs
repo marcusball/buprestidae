@@ -45,7 +45,7 @@ use std::env;
 use r2d2_diesel::ConnectionManager;
 
 use rocket::http::{Cookie, Cookies};
-use rocket::request::Form;
+use rocket::request::{Request, Outcome, Form, FromRequest};
 use rocket::response::Redirect;
 use rocket_contrib::Template;
 
@@ -57,6 +57,16 @@ use models::*;
 struct NewPostForm {
     title: String,
     body: String,
+}
+
+struct UserSession(Option<()>);
+
+impl<'a, 'r> FromRequest<'a, 'r> for UserSession {
+    type Error = ();
+
+    fn from_request(request: &'a Request<'r>) -> Outcome<UserSession, ()> {
+        return rocket::Outcome::Success(UserSession(None));
+    }
 }
 
 

@@ -16,10 +16,11 @@ extern crate r2d2;
 extern crate r2d2_diesel;
 #[macro_use]
 extern crate lazy_static;
-#[macro_use]
-extern crate log;
-extern crate env_logger;
+//#[macro_use]
+//#extern crate log;
+//#extern crate env_logger;
 extern crate chrono;
+extern crate lru_time_cache;
 
 pub mod schema;
 pub mod models;
@@ -42,11 +43,13 @@ use errors::*;
 use diesel::prelude::*;
 use diesel::pg::PgConnection;
 use std::env;
+use std::sync::RwLock;
 use r2d2_diesel::ConnectionManager;
+use lru_time_cache::LruCache;
 
-use rocket::http::{Cookie, Cookies};
+use rocket::http::{Cookie, Cookies, Status};
 use rocket::request::{Request, Outcome, Form, FromRequest};
-use rocket::response::Redirect;
+use rocket::response::{Redirect, Failure};
 use rocket_contrib::Template;
 
 use models::*;
@@ -59,7 +62,12 @@ struct NewPostForm {
     body: String,
 }
 
+#[derive(Clone)]
 struct UserSession();
+
+lazy_static! {
+    static ref SESSIONS: RwLock<LruCache<String, UserSession>> = RwLock::new(LruCache::<String, UserSession>::with_capacity(10));
+}
 
 impl<'a, 'r> FromRequest<'a, 'r> for UserSession {
     type Error = ();
@@ -68,8 +76,10 @@ impl<'a, 'r> FromRequest<'a, 'r> for UserSession {
         match request.cookies().find("BUP_SESSION") {
             None => rocket::Outcome::Forward(()),
             Some(cookie) => {
-                match cookie.value.as_str() {
-                    "supersecretkey" => rocket::Outcome::Success(UserSession()),
+                match SESSIONS.write()
+                    .expect("Failed to read session cache")
+                    .get(&cookie.value) {
+                    Some(session) => rocket::Outcome::Success(session.clone()),
                     _ => rocket::Outcome::Forward(()),
                 }
             }
@@ -149,8 +159,8 @@ fn blog_new_post(session: UserSession) -> Template {
 }
 
 #[get("/new", rank = 2)]
-fn blog_new_post_noauth() -> Redirect {
-    Redirect::to("/blog")
+fn blog_new_post_noauth() -> Failure {
+    Failure(Status::Forbidden)
 }
 
 #[post("/new", data="<post>")]
@@ -165,12 +175,20 @@ fn blog_new_post_submit(post: Form<NewPostForm>) -> Result<Redirect> {
 }
 
 #[get("/login")]
-fn login(cookies: &Cookies) -> Redirect {
+fn login(cookies: &Cookies) -> Result<Redirect> {
+    let _ = SESSIONS.write()
+        .expect("Failed to update session cache")
+        .insert("supersecretkey".into(), UserSession());
     let mut session = Cookie::new("BUP_SESSION".into(), "supersecretkey".into());
     session.httponly = true;
     cookies.add(session);
 
-    Redirect::to("/")
+    Ok(Redirect::to("/"))
+}
+
+#[error(403)]
+fn forbidden() -> &'static str {
+    "Unauthorized!"
 }
 
 fn main() {
@@ -178,5 +196,6 @@ fn main() {
         .mount("/", routes![index, login])
         .mount("/blog",
                routes![blog_index, blog_new_post, blog_new_post_noauth, blog_new_post_submit])
+        .catch(errors![forbidden])
         .launch();
 }

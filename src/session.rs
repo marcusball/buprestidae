@@ -16,6 +16,30 @@ lazy_static! {
 #[derive(Clone)]
 pub struct UserSession();
 
+impl UserSession {
+    fn new() -> UserSession {
+        UserSession()
+    }
+}
+
+pub struct SessionStore {}
+
+impl SessionStore {
+    /// Save the given session to the session store
+    fn insert(id: String, session: UserSession) {
+        let _ = SESSIONS.write()
+            .expect("Failed to update session cache")
+            .insert(id, session);
+    }
+
+    /// Get the session corresponding to the given session `id`, if one exists.
+    fn get(id: &String) -> Option<UserSession> {
+        if let Ok(mut sessions) = SESSIONS.write() {
+            return sessions.get(id).map(|session| (*session).clone());
+        }
+        None
+    }
+}
 
 impl<'a, 'r> FromRequest<'a, 'r> for UserSession {
     type Error = ();
@@ -24,10 +48,8 @@ impl<'a, 'r> FromRequest<'a, 'r> for UserSession {
         match request.cookies().find("BUP_SESSION") {
             None => rocket::Outcome::Forward(()),
             Some(cookie) => {
-                match SESSIONS.write()
-                    .expect("Failed to read session cache")
-                    .get(&cookie.value) {
-                    Some(session) => rocket::Outcome::Success(session.clone()),
+                match SessionStore::get(&cookie.value) {
+                    Some(session) => rocket::Outcome::Success(session),
                     _ => rocket::Outcome::Forward(()),
                 }
             }

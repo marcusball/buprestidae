@@ -21,6 +21,7 @@ extern crate lazy_static;
 //#extern crate env_logger;
 extern crate chrono;
 extern crate lru_time_cache;
+extern crate textnonce;
 
 pub mod schema;
 pub mod models;

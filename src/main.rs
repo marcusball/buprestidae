@@ -24,6 +24,10 @@ extern crate lru_time_cache;
 
 pub mod schema;
 pub mod models;
+mod pages;
+mod session;
+
+use pages::{blog, auth};
 
 // We'll put our errors in an `errors` module, and other modules in
 // this crate will `use errors::*;` to get access to everything
@@ -43,9 +47,7 @@ use errors::*;
 use diesel::prelude::*;
 use diesel::pg::PgConnection;
 use std::env;
-use std::sync::RwLock;
 use r2d2_diesel::ConnectionManager;
-use lru_time_cache::LruCache;
 
 use rocket::http::{Cookie, Cookies, Status};
 use rocket::request::{Request, Outcome, Form, FromRequest};
@@ -54,39 +56,6 @@ use rocket_contrib::Template;
 
 use models::*;
 // use schema::posts::dsl::*;
-
-
-#[derive(FromForm,Debug)]
-struct NewPostForm {
-    title: String,
-    body: String,
-}
-
-#[derive(Clone)]
-struct UserSession();
-
-lazy_static! {
-    static ref SESSIONS: RwLock<LruCache<String, UserSession>> = RwLock::new(LruCache::<String, UserSession>::with_capacity(10));
-}
-
-impl<'a, 'r> FromRequest<'a, 'r> for UserSession {
-    type Error = ();
-
-    fn from_request(request: &'a Request<'r>) -> Outcome<UserSession, ()> {
-        match request.cookies().find("BUP_SESSION") {
-            None => rocket::Outcome::Forward(()),
-            Some(cookie) => {
-                match SESSIONS.write()
-                    .expect("Failed to read session cache")
-                    .get(&cookie.value) {
-                    Some(session) => rocket::Outcome::Success(session.clone()),
-                    _ => rocket::Outcome::Forward(()),
-                }
-            }
-        }
-    }
-}
-
 
 
 // Create a static connection pool
@@ -132,59 +101,6 @@ fn index() -> &'static str {
     "Hello, world!"
 }
 
-#[get("/")]
-fn blog_index() -> Result<Template> {
-    #[derive(Serialize)]
-    struct BlogIndexContext {
-        posts: Vec<Post>,
-    }
-
-    let context =
-        BlogIndexContext { posts: get_posts().chain_err(|| "Failed to load posts from database")? };
-
-    Ok(Template::render("blog_index", &context))
-}
-
-#[get("/new")]
-fn blog_new_post(session: UserSession) -> Template {
-    #[derive(Serialize)]
-    struct NewPostContext {
-
-    }
-
-    let context = NewPostContext {};
-
-
-    Template::render("blog_new_post", &context)
-}
-
-#[get("/new", rank = 2)]
-fn blog_new_post_noauth() -> Failure {
-    Failure(Status::Forbidden)
-}
-
-#[post("/new", data="<post>")]
-fn blog_new_post_submit(post: Form<NewPostForm>) -> Result<Redirect> {
-    use schema::posts;
-    let post = post.get();
-
-    let draft = NewPost::new(post.title.as_str(), post.body.as_str());
-    diesel::insert(&draft).into(posts::table)
-        .get_result::<Post>(&*(connection().get()?))?;
-    Ok(Redirect::to("/blog"))
-}
-
-#[get("/login")]
-fn login(cookies: &Cookies) -> Result<Redirect> {
-    let _ = SESSIONS.write()
-        .expect("Failed to update session cache")
-        .insert("supersecretkey".into(), UserSession());
-    let mut session = Cookie::new("BUP_SESSION".into(), "supersecretkey".into());
-    session.httponly = true;
-    cookies.add(session);
-
-    Ok(Redirect::to("/"))
-}
 
 #[error(403)]
 fn forbidden() -> &'static str {
@@ -193,9 +109,9 @@ fn forbidden() -> &'static str {
 
 fn main() {
     rocket::ignite()
-        .mount("/", routes![index, login])
+        .mount("/", routes![index, auth::login])
         .mount("/blog",
-               routes![blog_index, blog_new_post, blog_new_post_noauth, blog_new_post_submit])
+               routes![blog::index, blog::new_post, blog::new_post_noauth, blog::new_post_submit])
         .catch(errors![forbidden])
         .launch();
 }

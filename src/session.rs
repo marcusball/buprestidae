@@ -1,5 +1,6 @@
 use std::sync::RwLock;
 use lru_time_cache::LruCache;
+use textnonce::TextNonce;
 
 use rocket;
 use rocket::http::{Cookie, Cookies, Status};
@@ -17,7 +18,7 @@ lazy_static! {
 pub struct UserSession();
 
 impl UserSession {
-    fn new() -> UserSession {
+    pub fn new() -> UserSession {
         UserSession()
     }
 }
@@ -25,15 +26,19 @@ impl UserSession {
 pub struct SessionStore {}
 
 impl SessionStore {
+    pub fn new_id() -> String {
+        TextNonce::sized_urlsafe(64).expect("Failed to create textnonce").into_string()
+    }
+
     /// Save the given session to the session store
-    fn insert(id: String, session: UserSession) {
+    pub fn insert(id: String, session: UserSession) {
         let _ = SESSIONS.write()
             .expect("Failed to update session cache")
             .insert(id, session);
     }
 
     /// Get the session corresponding to the given session `id`, if one exists.
-    fn get(id: &String) -> Option<UserSession> {
+    pub fn get(id: &String) -> Option<UserSession> {
         if let Ok(mut sessions) = SESSIONS.write() {
             return sessions.get(id).map(|session| (*session).clone());
         }

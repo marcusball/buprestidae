@@ -4,7 +4,7 @@ use rocket::response::{Redirect, Failure};
 use rocket_contrib::Template;
 
 use session;
-use session::{UserSession, SESSIONS};
+use session::{UserSession, SessionStore};
 
 // Create the Error, ErrorKind, ResultExt, and Result types
 error_chain!{
@@ -16,10 +16,9 @@ error_chain!{
 
 #[get("/login")]
 fn login(cookies: &Cookies) -> Result<Redirect> {
-    let _ = SESSIONS.write()
-        .expect("Failed to update session cache")
-        .insert("supersecretkey".into(), UserSession());
-    let mut session = Cookie::new("BUP_SESSION".into(), "supersecretkey".into());
+    let session_id = SessionStore::new_id();
+    SessionStore::insert(session_id.clone(), UserSession::new());
+    let mut session = Cookie::new("BUP_SESSION".into(), session_id);
     session.httponly = true;
     cookies.add(session);
 

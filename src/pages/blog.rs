@@ -37,7 +37,7 @@ pub fn index() -> Result<Template> {
         posts: ::get_posts().chain_err(|| "Failed to load posts from database")?,
     };
 
-    Ok(Template::render("blog_index", &context))
+    Ok(Template::render("blog/index", &context))
 }
 
 #[get("/new")]
@@ -50,7 +50,7 @@ pub fn new_post(session: UserSession) -> Template {
     let context = NewPostContext {};
 
 
-    Template::render("blog_new_post", &context)
+    Template::render("blog/new_post", &context)
 }
 
 #[get("/new", rank = 2)]

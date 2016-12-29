@@ -22,6 +22,7 @@ extern crate lazy_static;
 extern crate chrono;
 extern crate lru_time_cache;
 extern crate textnonce;
+extern crate libreauth;
 
 pub mod schema;
 pub mod models;
@@ -110,7 +111,7 @@ fn forbidden() -> &'static str {
 
 fn main() {
     rocket::ignite()
-        .mount("/", routes![index, auth::login])
+        .mount("/", routes![index, auth::login_get, auth::login_post])
         .mount("/blog",
                routes![blog::index, blog::new_post, blog::new_post_noauth, blog::new_post_submit])
         .catch(errors![forbidden])

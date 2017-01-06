@@ -4,8 +4,8 @@ version = "0.1.0"
 authors = ["Marcus Ball <marcus@marcusball.me>"]
 
 [dependencies]
-rocket = { path = "../Rocket/lib" }
-rocket_codegen = { path = "../Rocket/codegen" }
+rocket = "0.1.4"
+rocket_codegen = "0.1.4"
 error-chain="0.7"
 dotenv = "0.8.0"
 diesel = { version = "0.8.2", features = ["uuid","chrono"] }
@@ -25,7 +25,7 @@ textnonce = "0.4.1"
 libreauth = "0.5.2"
 
 [dependencies.rocket_contrib]
-path = "../Rocket/contrib"
+version = "*"
 default-features = false
 features = ["handlebars_templates"]
 

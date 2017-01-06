@@ -1,0 +1,6 @@
+// Place your settings in this file to overwrite default and user settings.
+{
+    "rust.formatOnSave": true, // Turn on/off autoformatting file on save (EXPERIMENTAL)
+    "rust.checkOnSave": true, // Turn on/off `cargo check` project on save (EXPERIMENTAL)
+    "rust.checkWith": "build" // Specifies the linter to use. (EXPERIMENTAL)
+}

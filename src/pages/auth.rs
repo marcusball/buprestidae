@@ -9,6 +9,22 @@ use libreauth::oath::TOTPBuilder;
 
 // Create the Error, ErrorKind, ResultExt, and Result types
 error_chain!{
+    errors {
+        LoginEmailDoesNotExist(email: String) {
+            description("Attempt to login with an email that does not exist")
+            display("Invalid login email: '{}'", email)
+        }
+
+        InvalidLoginOTP(email: String, code: String) {
+            description("Attempt to login with invalid OTP code")
+            display("Invalid login combination: '{}', {}", email, code)
+        }
+
+        LibreAuthError(e: ::libreauth::oath::ErrorCode) {
+            display("OTP code error: {:?}", e)
+        }
+    }
+
     foreign_links {
         R2D2Error(::r2d2::GetTimeout);
         DieselError(::diesel::result::Error);
@@ -41,18 +57,22 @@ fn login_post(form: Form<LoginForm>, cookies: &Cookies) -> Result<Redirect> {
     let is_code_valid = TOTPBuilder::new()
         .base32_key(&key_base32)
         .finalize()
-        .unwrap()
+        .map_err(|e| Error::from_kind(ErrorKind::LibreAuthError(e)))?
         .is_valid(&form.code);
 
-    if form.email == "test@test.com" && is_code_valid {
-        let session_id = SessionStore::new_id();
-        SessionStore::insert(session_id.clone(), UserSession::new());
-        let mut session = Cookie::new("BUP_SESSION".into(), session_id);
-        session.httponly = true;
-        cookies.add(session);
+    if form.email == "test@test.com" {
+        if is_code_valid {
+            let session_id = SessionStore::new_id();
+            SessionStore::insert(session_id.clone(), UserSession::new());
+            let mut session = Cookie::new("BUP_SESSION".into(), session_id);
+            session.httponly = true;
+            cookies.add(session);
 
-        Ok(Redirect::to("/"))
+            Ok(Redirect::to("/"))
+        } else {
+            Err(ErrorKind::InvalidLoginOTP(form.email.clone(), form.code.clone()).into())
+        }
     } else {
-        Ok(Redirect::to("/"))
+        Err(ErrorKind::LoginEmailDoesNotExist(form.email.clone()).into())
     }
 }

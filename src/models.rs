@@ -48,3 +48,16 @@ impl<'a> NewPost<'a> {
         }
     }
 }
+
+#[derive(Queryable)]
+pub struct User {
+    pub id: i32,
+    pub name: String,
+    pub display_name: String,
+    pub email: String,
+}
+
+#[derive(Queryable)]
+pub struct LoginCode {
+    pub code: String,
+}

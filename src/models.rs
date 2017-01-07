@@ -55,9 +55,5 @@ pub struct User {
     pub name: String,
     pub display_name: String,
     pub email: String,
-}
-
-#[derive(Queryable)]
-pub struct LoginCode {
     pub code: String,
 }

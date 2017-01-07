@@ -2,7 +2,7 @@ CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
     display_name TEXT NOT NULL,
-    email TEXT UNIQUE,
+    email TEXT UNIQUE NOT NULL,
     code TEXT NOT NULL
 );
 

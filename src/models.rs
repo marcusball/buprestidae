@@ -49,7 +49,7 @@ impl<'a> NewPost<'a> {
     }
 }
 
-#[derive(Queryable)]
+#[derive(Queryable, Clone)]
 pub struct User {
     /// Unique ID representing this user
     pub id: i32,

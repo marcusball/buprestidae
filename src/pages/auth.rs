@@ -3,6 +3,10 @@ use rocket::request::{Request, Outcome, Form, FromRequest};
 use rocket::response::{Redirect, Failure};
 use rocket_contrib::Template;
 
+use diesel;
+use diesel::prelude::*;
+use diesel::pg::PgConnection;
+
 use session;
 use session::{UserSession, SessionStore};
 use libreauth::oath::TOTPBuilder;
@@ -51,28 +55,30 @@ fn login_get() -> Template {
 
 #[post("/login", data = "<form>")]
 fn login_post(form: Form<LoginForm>, cookies: &Cookies) -> Result<Redirect> {
+    use ::models::User;
+    use ::schema::users::dsl::*;
+
     let form = form.get();
 
-    let key_base32 = "abcde".to_owned();
+    let user: User = users.filter(email.eq(&form.email))
+        .first(&*(::connection().get()?))
+        .chain_err(|| ErrorKind::LoginEmailDoesNotExist(form.email.clone()))?;
+
     let is_code_valid = TOTPBuilder::new()
-        .base32_key(&key_base32)
+        .base32_key(&user.code)
         .finalize()
         .map_err(|e| Error::from_kind(ErrorKind::LibreAuthError(e)))?
         .is_valid(&form.code);
 
-    if form.email == "test@test.com" {
-        if is_code_valid {
-            let session_id = SessionStore::new_id();
-            SessionStore::insert(session_id.clone(), UserSession::new());
-            let mut session = Cookie::new("BUP_SESSION".into(), session_id);
-            session.httponly = true;
-            cookies.add(session);
+    if is_code_valid {
+        let session_id = SessionStore::new_id();
+        SessionStore::insert(session_id.clone(), UserSession::new());
+        let mut session = Cookie::new("BUP_SESSION".into(), session_id);
+        session.httponly = true;
+        cookies.add(session);
 
-            Ok(Redirect::to("/"))
-        } else {
-            Err(ErrorKind::InvalidLoginOTP(form.email.clone(), form.code.clone()).into())
-        }
+        Ok(Redirect::to("/"))
     } else {
-        Err(ErrorKind::LoginEmailDoesNotExist(form.email.clone()).into())
+        Err(ErrorKind::InvalidLoginOTP(form.email.clone(), form.code.clone()).into())
     }
 }

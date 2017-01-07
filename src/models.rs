@@ -51,9 +51,18 @@ impl<'a> NewPost<'a> {
 
 #[derive(Queryable)]
 pub struct User {
+    /// Unique ID representing this user
     pub id: i32,
+
+    /// The full name for this user. Eg: "Jane Doe".
     pub name: String,
+
+    /// The display name for this user. Eg: "Jane".
     pub display_name: String,
+
+    /// The email address for this user.
     pub email: String,
+
+    /// The secret, base32 code, which is used to generate OTP codes for logging in.
     pub code: String,
 }

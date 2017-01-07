@@ -16,9 +16,9 @@ extern crate r2d2;
 extern crate r2d2_diesel;
 #[macro_use]
 extern crate lazy_static;
-//#[macro_use]
-//#extern crate log;
-//#extern crate env_logger;
+#[macro_use(log,info,debug,trace,warn)]
+extern crate log;
+extern crate env_logger;
 extern crate chrono;
 extern crate lru_time_cache;
 extern crate textnonce;

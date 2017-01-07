@@ -72,7 +72,7 @@ fn login_post(form: Form<LoginForm>, cookies: &Cookies) -> Result<Redirect> {
 
     if is_code_valid {
         let session_id = SessionStore::new_id();
-        SessionStore::insert(session_id.clone(), UserSession::new());
+        SessionStore::insert(session_id.clone(), UserSession::new(user));
         let mut session = Cookie::new("BUP_SESSION".into(), session_id);
         session.httponly = true;
         cookies.add(session);

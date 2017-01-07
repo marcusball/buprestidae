@@ -8,6 +8,8 @@ use rocket::request::{Request, Outcome, Form, FromRequest};
 use rocket::response::{Redirect, Failure};
 use rocket_contrib::Template;
 
+use ::models::User;
+
 
 lazy_static! {
     pub static ref SESSIONS: RwLock<LruCache<String, UserSession>> = RwLock::new(LruCache::<String, UserSession>::with_capacity(10));
@@ -15,11 +17,11 @@ lazy_static! {
 
 
 #[derive(Clone)]
-pub struct UserSession();
+pub struct UserSession(User);
 
 impl UserSession {
-    pub fn new() -> UserSession {
-        UserSession()
+    pub fn new(user: User) -> UserSession {
+        UserSession(user)
     }
 }
 
@@ -54,7 +56,10 @@ impl<'a, 'r> FromRequest<'a, 'r> for UserSession {
             None => rocket::Outcome::Forward(()),
             Some(cookie) => {
                 match SessionStore::get(&cookie.value) {
-                    Some(session) => rocket::Outcome::Success(session),
+                    Some(session) => {
+                        info!("Found session for {} ({})", &session.0.name, &session.0.id);
+                        rocket::Outcome::Success(session)
+                    }
                     _ => rocket::Outcome::Forward(()),
                 }
             }

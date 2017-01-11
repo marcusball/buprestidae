@@ -68,3 +68,13 @@ pub fn new_post_submit(post: Form<NewPostForm>) -> Result<Redirect> {
         .get_result::<Post>(&*(::connection().get()?))?;
     Ok(Redirect::to("/blog"))
 }
+
+#[get("/<post_id>")]
+pub fn display_post(post_id: i32) -> Result<Template> {
+    use schema::posts::dsl::*;
+
+    let post = posts.find(post_id)
+        .first::<Post>(&*::connection().get()?)?;
+
+    Ok(Template::render("blog/post", &post))
+}

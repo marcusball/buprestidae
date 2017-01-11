@@ -113,7 +113,11 @@ fn main() {
     rocket::ignite()
         .mount("/", routes![index, auth::login_get, auth::login_post])
         .mount("/blog",
-               routes![blog::index, blog::new_post, blog::new_post_noauth, blog::new_post_submit])
+               routes![blog::index,
+                       blog::new_post,
+                       blog::new_post_noauth,
+                       blog::new_post_submit,
+                       blog::display_post])
         .catch(errors![forbidden])
         .launch();
 }

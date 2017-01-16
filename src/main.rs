@@ -118,7 +118,8 @@ fn main() {
                        blog::new_post,
                        blog::new_post_noauth,
                        blog::new_post_submit,
-                       blog::display_post])
+                       blog::display_post,
+                       blog::forward_from_post_id])
         .catch(errors![forbidden])
         .launch();
 }

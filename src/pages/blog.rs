@@ -88,8 +88,20 @@ pub fn new_post_submit(post: Form<NewPostForm>) -> Result<Redirect> {
     Ok(Redirect::to("/blog"))
 }
 
+/// Handles someone visiting `/blog/xx`, where `xx` is the `id` of a blog post.
+/// This will simply forward the request to `/blog/xx/the-posts-slug`.
 #[get("/<post_id>")]
-pub fn display_post(post_id: i32) -> Result<Template> {
+pub fn forward_from_post_id(post_id: i32) -> Result<Redirect> {
+    use schema::posts::dsl::*;
+
+    let post = posts.find(post_id)
+        .first::<Post>(&*::connection().get()?)?;
+
+    Ok(Redirect::to(get_post_url(&post).as_str()))
+}
+
+#[get("/<post_id>/<post_slug>")]
+pub fn display_post(post_id: i32, post_slug: String) -> Result<Template> {
     use schema::posts::dsl::*;
 
     let post = posts.find(post_id)
@@ -97,7 +109,6 @@ pub fn display_post(post_id: i32) -> Result<Template> {
 
     Ok(Template::render("blog/post", &post))
 }
-
 
 
 

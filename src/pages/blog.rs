@@ -30,6 +30,8 @@ pub struct NewPostForm {
 
 #[get("/")]
 pub fn index() -> Result<Template> {
+    use schema::posts::dsl::*;
+
     #[derive(Serialize)]
     struct PostContext {
         title: String,
@@ -43,7 +45,9 @@ pub fn index() -> Result<Template> {
     }
 
     let context = BlogIndexContext {
-        posts: ::get_posts()
+        posts: posts.filter(is_published.eq(true))
+            .order(publish_date.desc())
+            .load::<Post>(&*try!(::connection().get()))
             .chain_err(|| "Failed to load posts from database")?
             .into_iter()
             .map(|post| {

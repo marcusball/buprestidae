@@ -23,6 +23,7 @@ extern crate chrono;
 extern crate lru_time_cache;
 extern crate textnonce;
 extern crate libreauth;
+extern crate slug;
 
 pub mod schema;
 pub mod models;

@@ -10,6 +10,8 @@ use rocket::request::{Request, Outcome, Form, FromRequest};
 use rocket::response::{Redirect, Failure};
 use rocket_contrib::Template;
 
+use slug;
+
 // Create the Error, ErrorKind, ResultExt, and Result types
 error_chain!{
     foreign_links {
@@ -29,12 +31,29 @@ pub struct NewPostForm {
 #[get("/")]
 pub fn index() -> Result<Template> {
     #[derive(Serialize)]
+    struct PostContext {
+        title: String,
+        body: String,
+        url: String,
+    }
+
+    #[derive(Serialize)]
     struct BlogIndexContext {
-        posts: Vec<Post>,
+        posts: Vec<PostContext>,
     }
 
     let context = BlogIndexContext {
-        posts: ::get_posts().chain_err(|| "Failed to load posts from database")?,
+        posts: ::get_posts()
+            .chain_err(|| "Failed to load posts from database")?
+            .into_iter()
+            .map(|post| {
+                PostContext {
+                    url: get_post_url(&post),
+                    title: post.title,
+                    body: post.body,
+                }
+            })
+            .collect(),
     };
 
     Ok(Template::render("blog/index", &context))
@@ -77,4 +96,12 @@ pub fn display_post(post_id: i32) -> Result<Template> {
         .first::<Post>(&*::connection().get()?)?;
 
     Ok(Template::render("blog/post", &post))
+}
+
+
+
+
+/// Create a url for linking to the given `post`.
+fn get_post_url(post: &Post) -> String {
+    format!("/blog/{}/{}", &post.id, slug::slugify(&post.title))
 }

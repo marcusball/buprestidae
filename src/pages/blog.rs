@@ -82,29 +82,19 @@ pub fn new_post_submit(post: Form<NewPostForm>) -> Result<Redirect> {
     use schema::posts;
     let post = post.get();
 
-    let draft = NewPost::new(post.title.as_str(), post.body.as_str());
+    let post_slug = slug::slugify(&post.title);
+
+    let draft = NewPost::new(post.title.as_str(), post.body.as_str(), post_slug.as_str());
     diesel::insert(&draft).into(posts::table)
         .get_result::<Post>(&*(::connection().get()?))?;
     Ok(Redirect::to("/blog"))
 }
 
-/// Handles someone visiting `/blog/xx`, where `xx` is the `id` of a blog post.
-/// This will simply forward the request to `/blog/xx/the-posts-slug`.
-#[get("/<post_id>")]
-pub fn forward_from_post_id(post_id: i32) -> Result<Redirect> {
+#[get("/<post_slug>")]
+pub fn display_post(post_slug: String) -> Result<Template> {
     use schema::posts::dsl::*;
 
-    let post = posts.find(post_id)
-        .first::<Post>(&*::connection().get()?)?;
-
-    Ok(Redirect::to(get_post_url(&post).as_str()))
-}
-
-#[get("/<post_id>/<post_slug>")]
-pub fn display_post(post_id: i32, post_slug: String) -> Result<Template> {
-    use schema::posts::dsl::*;
-
-    let post = posts.find(post_id)
+    let post = posts.filter(slug.eq(post_slug))
         .first::<Post>(&*::connection().get()?)?;
 
     Ok(Template::render("blog/post", &post))
@@ -114,5 +104,5 @@ pub fn display_post(post_id: i32, post_slug: String) -> Result<Template> {
 
 /// Create a url for linking to the given `post`.
 fn get_post_url(post: &Post) -> String {
-    format!("/blog/{}/{}", &post.id, slug::slugify(&post.title))
+    format!("/blog/{}", &post.slug)
 }

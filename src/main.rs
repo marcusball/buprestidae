@@ -89,15 +89,6 @@ pub fn get_posts() -> Result<Vec<Post>> {
     Ok(results)
 }
 
-pub fn new_draft<'a>(post_title: &'a str, post_body: &'a str) -> Result<Post> {
-    use schema::posts;
-
-    let draft = NewPost::draft(post_title, post_body);
-
-    Ok(diesel::insert(&draft).into(posts::table)
-        .get_result(&*try!(connection().get()))?)
-}
-
 
 #[get("/")]
 fn index() -> &'static str {
@@ -118,8 +109,7 @@ fn main() {
                        blog::new_post,
                        blog::new_post_noauth,
                        blog::new_post_submit,
-                       blog::display_post,
-                       blog::forward_from_post_id])
+                       blog::display_post])
         .catch(errors![forbidden])
         .launch();
 }

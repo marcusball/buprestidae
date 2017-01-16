@@ -6,7 +6,7 @@ use models::*;
 use session::UserSession;
 
 use rocket::http::{Cookie, Cookies, Status};
-use rocket::request::{Request, Outcome, Form, FromRequest};
+use rocket::request::{Request, Outcome, Form, FromRequest, FromParam};
 use rocket::response::{Redirect, Failure};
 use rocket_contrib::Template;
 
@@ -25,6 +25,22 @@ error_chain!{
 pub struct NewPostForm {
     title: String,
     body: String,
+}
+
+pub struct PostId(i32);
+
+impl<'a> FromParam<'a> for Post {
+    type Error = self::Error;
+    fn from_param(param: &'a str) -> Result<Self> {
+        use schema::posts::dsl::*;
+
+        let post_slug: String = String::from_param(param)?;
+
+        let post = posts.filter(slug.eq(post_slug))
+            .first::<Post>(&*::connection().get()?)?;
+
+        Ok(post)
+    }
 }
 
 
@@ -94,13 +110,8 @@ pub fn new_post_submit(post: Form<NewPostForm>) -> Result<Redirect> {
     Ok(Redirect::to("/blog"))
 }
 
-#[get("/<post_slug>")]
-pub fn display_post(post_slug: String) -> Result<Template> {
-    use schema::posts::dsl::*;
-
-    let post = posts.filter(slug.eq(post_slug))
-        .first::<Post>(&*::connection().get()?)?;
-
+#[get("/<post>")]
+pub fn display_post(post: Post) -> Result<Template> {
     Ok(Template::render("blog/post", &post))
 }
 

@@ -25,6 +25,7 @@ textnonce = "0.4.1"
 libreauth = "0.5.2"
 slug = "0.1.2"
 pulldown-cmark = "0.0.8"
+time = "^0.1.31"
 
 [dependencies.rocket_contrib]
 version = "*"

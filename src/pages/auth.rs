@@ -10,6 +10,7 @@ use diesel::pg::PgConnection;
 use session;
 use session::{UserSession, SessionStore};
 use libreauth::oath::TOTPBuilder;
+use time;
 
 // Create the Error, ErrorKind, ResultExt, and Result types
 error_chain!{
@@ -64,13 +65,8 @@ fn login_post(form: Form<LoginForm>, cookies: &Cookies) -> Result<Redirect> {
         .first(&*(::connection().get()?))
         .chain_err(|| ErrorKind::LoginEmailDoesNotExist(form.email.clone()))?;
 
-    let is_code_valid = TOTPBuilder::new()
-        .base32_key(&user.code)
-        .finalize()
-        .map_err(|e| Error::from_kind(ErrorKind::LibreAuthError(e)))?
-        .is_valid(&form.code);
-
-    if is_code_valid {
+    // Test if the OTP code provided is valid for this user
+    if is_valid_totp_code(&form.code, &user.code, 1) {
         let session_id = SessionStore::new_id();
         SessionStore::insert(session_id.clone(), UserSession::new(user));
         let mut session = Cookie::new("BUP_SESSION".into(), session_id);
@@ -80,5 +76,59 @@ fn login_post(form: Form<LoginForm>, cookies: &Cookies) -> Result<Redirect> {
         Ok(Redirect::to("/"))
     } else {
         Err(ErrorKind::InvalidLoginOTP(form.email.clone(), form.code.clone()).into())
+    }
+}
+
+/// Check whether the given TOTP `code` is valid for the specified
+/// base32 `key` value. This will test if the code is correct for
+/// the code at the current time value, as well as the codes at ±N times
+/// in the past and future, where N is the `plusminus` value.
+fn is_valid_totp_code(code: &String, key: &String, plusminus: u8) -> bool {
+    // The timestep, in seconds.
+    let period = 30;
+
+    let current_time = time::now().to_timespec().sec;
+
+    // Create a list of period offsets for which to test if the code is valid
+    let offset_list = plus_or_minus_offset_list(plusminus);
+
+    offset_list.iter().any(|offset| {
+        TOTPBuilder::new()
+            .period(period)
+            .base32_key(key)
+            .timestamp(current_time + (period as i64 * *offset as i64))
+            .finalize()
+            .and_then(|totp| Ok(totp.is_valid(code)))
+            .unwrap_or(false)
+    })
+}
+
+/// Generate a vector of integers from `-plusminus` to `plusminus`.
+///
+/// # Examples
+///
+/// ```
+/// let offset_list = plus_or_minus_offset_list(2);
+/// assert_eq!(offset_list, vec![0, -1, 1, -2, 2]);
+/// ```
+fn plus_or_minus_offset_list(plusminus: u8) -> Vec<i16> {
+    let mut offset_list: Vec<i16> = vec![0];
+    for offset in 1..(plusminus + 1) {
+        offset_list.push(offset as i16 * -1);
+        offset_list.push(offset as i16);
+    }
+    offset_list
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn plus_or_minus_offset_list_works() {
+        assert_eq!(plus_or_minus_offset_list(0), vec![0]);
+        assert_eq!(plus_or_minus_offset_list(1), vec![0, -1, 1]);
+        assert_eq!(plus_or_minus_offset_list(2), vec![0, -1, 1, -2, 2]);
+        assert_eq!(plus_or_minus_offset_list(3), vec![0, -1, 1, -2, 2, -3, 3]);
     }
 }

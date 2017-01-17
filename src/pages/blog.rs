@@ -12,6 +12,8 @@ use rocket_contrib::Template;
 
 use slug;
 
+use pulldown_cmark::{html, Parser};
+
 // Create the Error, ErrorKind, ResultExt, and Result types
 error_chain!{
     foreign_links {
@@ -27,8 +29,6 @@ pub struct NewPostForm {
     body: String,
 }
 
-pub struct PostId(i32);
-
 impl<'a> FromParam<'a> for Post {
     type Error = self::Error;
     fn from_param(param: &'a str) -> Result<Self> {
@@ -43,17 +43,29 @@ impl<'a> FromParam<'a> for Post {
     }
 }
 
+/// Struct describing a single post, which will be supplied
+/// to page templates for rendering the specified post.
+#[derive(Serialize)]
+struct PostContext {
+    title: String,
+    body: String,
+    url: String,
+}
+
+impl PostContext {
+    pub fn from_post(post: Post) -> PostContext {
+        PostContext {
+            url: get_post_url(&post),
+            title: post.title,
+            body: render_markdown(&post.body),
+        }
+    }
+}
+
 
 #[get("/")]
 pub fn index() -> Result<Template> {
     use schema::posts::dsl::*;
-
-    #[derive(Serialize)]
-    struct PostContext {
-        title: String,
-        body: String,
-        url: String,
-    }
 
     #[derive(Serialize)]
     struct BlogIndexContext {
@@ -66,13 +78,7 @@ pub fn index() -> Result<Template> {
             .load::<Post>(&*try!(::connection().get()))
             .chain_err(|| "Failed to load posts from database")?
             .into_iter()
-            .map(|post| {
-                PostContext {
-                    url: get_post_url(&post),
-                    title: post.title,
-                    body: post.body,
-                }
-            })
+            .map(|post| PostContext::from_post(post))
             .collect(),
     };
 
@@ -112,7 +118,7 @@ pub fn new_post_submit(post: Form<NewPostForm>) -> Result<Redirect> {
 
 #[get("/<post>")]
 pub fn display_post(post: Post) -> Result<Template> {
-    Ok(Template::render("blog/post", &post))
+    Ok(Template::render("blog/post", &PostContext::from_post(post)))
 }
 
 
@@ -120,4 +126,20 @@ pub fn display_post(post: Post) -> Result<Template> {
 /// Create a url for linking to the given `post`.
 fn get_post_url(post: &Post) -> String {
     format!("/blog/{}", &post.slug)
+}
+
+/// Takes a string `body` containing markdown (CommonMark)
+/// and returns the rendered HTML of the body.
+fn render_markdown<S: AsRef<str>>(body: S) -> String {
+    // Create a destination string buffer
+    let mut rendered = String::new();
+
+    // Parse the markdown
+    let parser = Parser::new(body.as_ref());
+
+    // Iterate over the parsed markdown, placing output in the `rendered` buffer.
+    html::push_html(&mut rendered, parser);
+
+    // return the HTML body
+    return rendered;
 }

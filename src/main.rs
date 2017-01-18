@@ -53,11 +53,13 @@ use diesel::prelude::*;
 use diesel::pg::PgConnection;
 use std::env;
 use r2d2_diesel::ConnectionManager;
+use std::path::{Path, PathBuf};
 
 use rocket::http::{Cookie, Cookies, Status};
 use rocket::request::{Request, Outcome, Form, FromRequest};
 use rocket::response::{Redirect, Failure};
 use rocket_contrib::Template;
+use rocket::response::NamedFile;
 
 use models::*;
 // use schema::posts::dsl::*;
@@ -97,6 +99,11 @@ fn index() -> &'static str {
     "Hello, world!"
 }
 
+#[get("/static/<file..>")]
+fn static_content(file: PathBuf) -> Result<NamedFile> {
+    NamedFile::open(Path::new("static/").join(file)).chain_err(|| "File not found!")
+}
+
 
 #[error(403)]
 fn forbidden() -> &'static str {
@@ -105,7 +112,8 @@ fn forbidden() -> &'static str {
 
 fn main() {
     rocket::ignite()
-        .mount("/", routes![index, auth::login_get, auth::login_post])
+        .mount("/",
+               routes![index, static_content, auth::login_get, auth::login_post])
         .mount("/blog",
                routes![blog::index,
                        blog::new_post,

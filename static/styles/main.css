@@ -1,0 +1,28 @@
+/*************************************/
+/** Base elements                   **/
+/*************************************/
+
+h1 {
+  font-size: 2.747em;
+}
+h2 {
+  font-size: 2.22em;
+}
+h3 {
+  font-size: 1.8em;
+}
+
+
+/*************************************/
+/** Containers                      **/
+/*************************************/
+
+.container {
+    margin: 0 auto;
+    min-width: 25em;
+	max-width: 33em;       /* http://maxdesign.com.au/articles/em/ */
+}
+
+.container img {
+    max-width: 100%;
+}

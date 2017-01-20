@@ -3,18 +3,26 @@
     <head>
         <meta charset="utf-8" />
         <title>Blog</title>
+
+        <link rel="stylesheet" href="/static/styles/reset.css" />
+        <link rel="stylesheet" href="/static/styles/wing.min.css" integrity="sha256-5a3907136236b161533313d03ddbf4d605e4fdb8af7d64aca3f89e6fcac1f6d7" />
+        <link rel="stylesheet" href="/static/styles/main.css" />
     </head>
 
     <body>
-        <h1>Hello</h1>
+        <div class="container">
+            <div class="row">
+                <h1>Hello</h1>
 
-        {{#each posts}}
-        <article>
-            <h2><a href="{{url}}">{{title}}</a></h2>
-            <div>
-                {{{body}}}
+                {{#each posts}}
+                <article>
+                    <h2><a href="{{url}}">{{title}}</a></h2>
+                    <div>
+                        {{{body}}}
+                    </div>
+                </article>
+                {{/each}}
             </div>
-        </article>
-        {{/each}}
+        </div>
     </body>
 </html>

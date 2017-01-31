@@ -1,4 +1,24 @@
 /*************************************/
+/** Fonts                           **/
+/*************************************/
+
+body {
+  font-size: 20px;
+}
+
+@media(max-width: 1580px) {
+  html {
+    font-size: 18px;
+  }
+}
+@media(max-width: 980px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+
+/*************************************/
 /** Base elements                   **/
 /*************************************/
 
@@ -12,17 +32,59 @@ h3 {
   font-size: 1.8em;
 }
 
+a {
+  color: #25202e;
+}
+
+article {
+	padding: 1em 0em;
+	border-bottom: 1px solid #b9aece;
+}
+
+ol, ul {
+  padding: 0.5em 0 0.5em 1.5em;
+}
+
+ol {
+  list-style: decimal;
+}
+
+ul {
+  list-style: square;
+}
 
 /*************************************/
 /** Containers                      **/
 /*************************************/
 
+body {
+  background: #e4e4e4 none;
+  color: #25202e;
+  line-height: 1.4;
+}
+
 .container {
-    margin: 0 auto;
-    min-width: 25em;
-	max-width: 33em;       /* http://maxdesign.com.au/articles/em/ */
+  margin: 0 auto;
+  min-width: 25em;
+  max-width: 33em;       /* http://maxdesign.com.au/articles/em/ */
 }
 
 .container img {
-    max-width: 100%;
+  max-width: 100%;
+}
+
+pre {
+  font-family: monospace;
+  border: 1px solid #b9aece;
+  background: #e1dee6 none;
+  padding: 0.5em;
+  margin: 0.5em 0;
+}
+
+/*************************************/
+/** Post styles                     **/
+/*************************************/
+
+article h2 {
+  margin: 0.3em 0;
 }

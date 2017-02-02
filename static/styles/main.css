@@ -33,7 +33,23 @@ h3 {
 }
 
 a {
-  color: #25202e;
+  color: #786d8d;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+em {
+  font-style: italic;
+}
+
+strong {
+  font-weight: bold;
+}
+
+code {
+  font-family: monospace;
 }
 
 article {
@@ -74,17 +90,37 @@ body {
 }
 
 pre {
-  font-family: monospace;
-  border: 1px solid #b9aece;
-  background: #e1dee6 none;
-  padding: 0.5em;
-  margin: 0.5em 0;
+  padding: 0.5em 0;
+}
+
+/* Add a space above paragraphs that follow other paragraphs. */
+p + p {
+  padding: 0.5em 0 0;
+}
+
+blockquote {
+	border-left: 0.25em solid #b9aece;
+	margin: 0.5em 0 0.5em 0.4em;
+	padding: 0.1em 0 0.1em 0.4em;
 }
 
 /*************************************/
 /** Post styles                     **/
 /*************************************/
 
-article h2 {
+.post-title h2 {
   margin: 0.3em 0;
+}
+
+.post-title a {
+  color: #25202e;
+}
+
+
+/*************************************/
+/** Specific overrides              **/
+/*************************************/
+.hljs {
+  border: 1px solid #b9aece;
+  background: #e1dee6 none !important;
 }

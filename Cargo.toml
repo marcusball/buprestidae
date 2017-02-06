@@ -4,22 +4,22 @@ version = "0.1.0"
 authors = ["Marcus Ball <marcus@marcusball.me>"]
 
 [dependencies]
-rocket = "0.1.5"
-rocket_codegen = "0.1.5"
+rocket = "0.1.6"
+rocket_codegen = "0.1.6"
 error-chain="0.7"
 dotenv = "0.8.0"
-diesel = { version = "0.9.1", features = ["uuid","chrono"] }
-diesel_codegen = { version = "0.9.0", features = ["postgres"], optional = true }
+diesel = { version = "0.10.0", features = ["postgres","uuid","chrono"] }
+diesel_codegen = { version = "0.10.0", features = ["postgres"] }
 r2d2 = "0.7.1"
-r2d2-diesel = "0.9.0"
+r2d2-diesel = "0.10.0"
 lazy_static = "0.2.2"
 log = "0.3.6"
 env_logger = "0.3.5"
 base64 = "0.2.1"
 chrono = "0.2.25"
-serde = "*"
-serde_derive = "*"
-serde_json = "*"
+serde = "0.8.23"
+serde_derive = "0.8.23"
+serde_json = "0.8.6"
 lru_time_cache = "0.5.0"
 textnonce = "0.4.1"
 libreauth = "0.5.2"
@@ -32,7 +32,4 @@ version = "*"
 default-features = false
 features = ["handlebars_templates"]
 
-[features]
-default = ["nightly"]
-nightly = ["diesel/unstable", "diesel_codegen"]
 

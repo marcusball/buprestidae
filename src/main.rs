@@ -1,4 +1,4 @@
-#![feature(proc_macro, plugin, custom_derive)]
+#![feature(plugin, custom_derive)]
 #![plugin(rocket_codegen)]
 
 extern crate rocket;

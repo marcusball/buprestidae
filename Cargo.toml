@@ -4,8 +4,8 @@ version = "0.1.0"
 authors = ["Marcus Ball <marcus@marcusball.me>"]
 
 [dependencies]
-rocket = "0.1.6"
-rocket_codegen = "0.1.6"
+rocket = "0.2.0"
+rocket_codegen = "0.2.0"
 error-chain="0.7"
 dotenv = "0.8.0"
 diesel = { version = "0.10.0", features = ["postgres","uuid","chrono"] }
@@ -17,9 +17,9 @@ log = "0.3.6"
 env_logger = "0.3.5"
 base64 = "0.2.1"
 chrono = "0.2.25"
-serde = "0.8.23"
-serde_derive = "0.8.23"
-serde_json = "0.8.6"
+serde = "0.9.6"
+serde_derive = "0.9.6"
+serde_json = "0.9.5"
 lru_time_cache = "0.5.0"
 textnonce = "0.4.1"
 libreauth = "0.5.2"

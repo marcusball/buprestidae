@@ -48,7 +48,7 @@ pub struct LoginForm {
 #[get("/login")]
 fn login_get() -> Template {
     #[derive(Serialize)]
-    struct LoginContext { }
+    struct LoginContext {}
     let context = LoginContext {};
 
     Template::render("auth/login", &context)
@@ -56,7 +56,7 @@ fn login_get() -> Template {
 
 #[post("/login", data = "<form>")]
 fn login_post(form: Form<LoginForm>, cookies: &Cookies) -> Result<Redirect> {
-    use ::models::User;
+    use models::User;
     use ::schema::users::dsl::*;
 
     let form = form.get();
@@ -69,8 +69,8 @@ fn login_post(form: Form<LoginForm>, cookies: &Cookies) -> Result<Redirect> {
     if is_valid_totp_code(&form.code, &user.code, 1) {
         let session_id = SessionStore::new_id();
         SessionStore::insert(session_id.clone(), UserSession::new(user));
-        let mut session = Cookie::new("BUP_SESSION".into(), session_id);
-        session.httponly = true;
+        let mut session = Cookie::new("BUP_SESSION", session_id);
+        session.set_http_only(true);
         cookies.add(session);
 
         Ok(Redirect::to("/"))

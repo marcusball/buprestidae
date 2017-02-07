@@ -8,7 +8,7 @@ use rocket::request::{Request, Outcome, Form, FromRequest};
 use rocket::response::{Redirect, Failure};
 use rocket_contrib::Template;
 
-use ::models::User;
+use models::User;
 
 
 lazy_static! {
@@ -55,7 +55,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for UserSession {
         match request.cookies().find("BUP_SESSION") {
             None => rocket::Outcome::Forward(()),
             Some(cookie) => {
-                match SessionStore::get(&cookie.value) {
+                match SessionStore::get(&cookie.value().into()) {
                     Some(session) => {
                         info!("Found session for {} ({})", &session.0.name, &session.0.id);
                         rocket::Outcome::Success(session)

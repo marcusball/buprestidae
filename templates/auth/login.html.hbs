@@ -3,20 +3,30 @@
     <head>
         <meta charset="utf-8" />
         <title>Login</title>
+
+        {{> common/header }}
     </head>
 
     <body>
-        <h1>Who the fuck are you?</h1>
-        <form method="POST" action="/login">
-            <div>
-                <label for="email">Email: </label>
-                <input type="text" name="email" />
+        <div class="container">
+            <div class="row">
+                <article>
+                    <h1>Who the fuck are you?</h1>
+                    <form method="POST" action="/login">
+                        <div>
+                            <label for="email">Email: </label>
+                            <input type="text" name="email" />
+                        </div>
+                        <div>
+                            <label for="code">Code: </label>
+                            <input type="text" name="code" />
+                        </div>
+                        <input type="submit" value="Login"></input>
+                    </form>
+                </article>
             </div>
-            <div>
-                <label for="code">Code: </label>
-                <input type="text" name="code" />
-            </div>
-            <input type="submit" value="Login"></input>
-        </form>
+        </div>
     </body>
+
+    {{> common/footer }}
 </html>

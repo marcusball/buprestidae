@@ -4,27 +4,35 @@
         <meta charset="utf-8" />
         <title>New blog post</title>
 
-        <link rel="stylesheet" href="/static/styles/reset.css" />
-        <link rel="stylesheet" href="/static/styles/wing.min.css" integrity="sha256-5a3907136236b161533313d03ddbf4d605e4fdb8af7d64aca3f89e6fcac1f6d7" />
-        <link rel="stylesheet" href="/static/styles/main.css" />
+        {{> common/header }}
+
+        <style type="text/css">
+            .new-post textarea {
+                height: 300px;
+            }
+        </style>
     </head>
 
     <body>
-        <div class="container">
+        <div class="container new-post">
             <div class="row">
-                <h1>Write your new post, asshole</h1>
-                <form method="POST" action="/blog/new">
-                    <div>
-                        <label for="title">Title: </label>
-                        <input type="text" name="title" />
-                    </div>
-                    <div>
-                        <label for="body">Body: </label>
-                        <textarea name="body"></textarea>
-                    </div>
-                    <input type="submit" value="Create Post"></input>
-                </form>
+                <article>
+                    <h1>Write your new post, asshole</h1>
+                    <form method="POST" action="/blog/new">
+                        <div>
+                            <label for="title">Title: </label>
+                            <input type="text" name="title" />
+                        </div>
+                        <div>
+                            <label for="body">Body: </label>
+                            <textarea name="body"></textarea>
+                        </div>
+                        <input type="submit" value="Create Post"></input>
+                    </form>
+                </article>
             </div>
         </div>
     </body>
+
+    {{> common/footer }}
 </html>

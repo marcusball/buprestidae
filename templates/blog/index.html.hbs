@@ -4,12 +4,7 @@
         <meta charset="utf-8" />
         <title>Blog</title>
 
-        <link rel="stylesheet" href="/static/styles/reset.css" />
-        <link rel="stylesheet" href="/static/styles/wing.min.css" />
-        <link rel="stylesheet" href="/static/styles/main.css" />
-        <link rel="stylesheet" href="/static/styles/highlightjs/color-brewer.css" />
-
-        <script src="/static/scripts/highlight.pack.js"></script>
+        {{> common/header }}
     </head>
 
     <body>
@@ -29,11 +24,5 @@
         </div>
     </body>
 
-    <!-- Highlight.js initialization code -->
-    <script> 
-        // Disable auto-language detection
-        // See: https://github.com/isagalaev/highlight.js/issues/415
-        hljs.configure({languages: []});
-        hljs.initHighlightingOnLoad(); 
-    </script>
+    {{> common/footer }}
 </html>

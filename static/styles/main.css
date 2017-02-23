@@ -131,6 +131,7 @@ nav li {
 nav li a {
   color: #25202e;
   font-family: montserratregular, "Open Sans",HelveticaNeue,"Helvetica Neue",Helvetica,Arial,sans-serif;
+  text-transform: uppercase;
 }
 
 nav li:hover a {

@@ -105,6 +105,38 @@ blockquote {
 }
 
 /*************************************/
+/** Header                          **/
+/*************************************/
+
+#main-header {
+  text-align: center;
+}
+
+/*************************************/
+/** Navigation                      **/
+/*************************************/
+
+nav ul {
+  list-style: none;
+  text-align: center;
+}
+
+nav li {
+  display: inline-block;
+  padding: 0.2em 1em;
+}
+
+nav li a {
+  color: #25202e;
+  font-weight: bold;
+  border-bottom: 2px solid #25202e
+}
+
+nav li:hover a {
+  text-decoration: none;
+}
+
+/*************************************/
 /** Post styles                     **/
 /*************************************/
 

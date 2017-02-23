@@ -9,9 +9,20 @@
 
     <body>
         <div class="container">
-            <div class="row">
+            <div id="main-header" class="row">
                 <h1>Hello</h1>
+            </div>
 
+            <nav class="row">
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/blog">Blog</a></li>
+                    <li><a href="#">Hire me</a></li>
+                    <li><a href="#">Contact</a></li>                                          
+                </ul>
+            </nav>
+
+            <div class="row">
                 {{#each posts}}
                 <article>
                     <h2 class="post-title"><a href="{{url}}">{{title}}</a></h2>

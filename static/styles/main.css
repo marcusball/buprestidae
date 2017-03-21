@@ -56,7 +56,10 @@ code {
 
 article {
 	padding: 1em 0em;
-	border-bottom: 1px solid #b9aece;
+}
+
+article:not(:last-of-type) {
+  border-bottom: 1px solid #b9aece;
 }
 
 ol, ul {

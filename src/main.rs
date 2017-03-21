@@ -93,12 +93,6 @@ pub fn get_posts() -> Result<Vec<Post>> {
     Ok(results)
 }
 
-
-#[get("/")]
-fn index() -> &'static str {
-    "Hello, world!"
-}
-
 #[get("/static/<file..>")]
 fn static_content(file: PathBuf) -> Result<NamedFile> {
     NamedFile::open(Path::new("static/").join(file)).chain_err(|| "File not found!")
@@ -113,7 +107,7 @@ fn forbidden() -> &'static str {
 fn main() {
     rocket::ignite()
         .mount("/",
-               routes![index, static_content, auth::login_get, auth::login_post])
+               routes![pages::index, static_content, auth::login_get, auth::login_post])
         .mount("/blog",
                routes![blog::index,
                        blog::new_post,

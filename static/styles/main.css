@@ -6,12 +6,6 @@
 
 body {
   font-size: 20px;
-
-  /**
-   * Prevent the scrollbar from shifting content 
-   * @see http://stackoverflow.com/a/30293718/451726
-   */
-  padding-left: calc(100vw - 100%);
 }
 
 @media(max-width: 1580px) {
@@ -81,16 +75,31 @@ ul {
 /** Containers                      **/
 /*************************************/
 
+html, body {
+  height: 100%;
+}
+
 body {
   background: #e4e4e4 none;
   color: #25202e;
   line-height: 1.4;
+
+  /**
+   * Prevent the scrollbar from shifting content 
+   * @see http://stackoverflow.com/a/30293718/451726
+   */
+  padding-left: calc(100vw - 100%);
 }
 
 .container {
   margin: 0 auto;
   min-width: 25em;
   max-width: 33em;       /* http://maxdesign.com.au/articles/em/ */
+
+  /* http://stackoverflow.com/a/24979148/451726 */
+  display: flex;
+  flex-flow: column;
+  height: 100%;
 }
 
 .container img {
@@ -112,12 +121,25 @@ blockquote {
 	padding: 0.1em 0 0.1em 0.4em;
 }
 
+.fill-content {
+  flex: 1 1 auto; /* http://stackoverflow.com/a/24979148/451726 */
+}
+
 /*************************************/
-/** Header                          **/
+/** Header/Footer                   **/
 /*************************************/
 
 #main-header {
   text-align: center;
+  flex: 0 1 auto; /* http://stackoverflow.com/a/24979148/451726 */
+}
+
+footer {
+  flex: 0 1 40px;
+  margin: 0.5em 0 0 0;
+  padding: 0.5em 0 0 0;
+  border-top: 1px solid #bbb;
+  color: #bbb;
 }
 
 /*************************************/

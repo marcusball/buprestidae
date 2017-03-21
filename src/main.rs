@@ -107,7 +107,11 @@ fn forbidden() -> &'static str {
 fn main() {
     rocket::ignite()
         .mount("/",
-               routes![pages::index, static_content, auth::login_get, auth::login_post])
+               routes![pages::index,
+                       pages::contact,
+                       static_content,
+                       auth::login_get,
+                       auth::login_post])
         .mount("/blog",
                routes![blog::index,
                        blog::new_post,
